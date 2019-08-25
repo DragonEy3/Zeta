@@ -1,6 +1,6 @@
 # Zeta Terminal
 
-NodeJS application which uses minecraft-protocol and readline to create a chat bridge between a server and your console.
+NodeJS application which uses minecraft-protocol and readline to stream a minecraft server's chat directly to your console.
 
 ## Dependencies
 
