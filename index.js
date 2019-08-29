@@ -3,7 +3,10 @@ const config = require('./config')
 const readline = require('readline');
 const chalk = require('chalk');
 var mc = require('minecraft-protocol');
-
+//Variables
+const prefix = ".";
+let colorNames = ["aqua", "dark_aqua", "blue", "gold", "black", "red", "dark_red", "green", "dark_green", "light_purple", "purple"]
+let trueColors = ["blue", "blue", "blue", "yellow", "black", "red", "red", "green", "green", "magenta", "magenta"]
 //Initializing
 var client = mc.createClient({
   host: config.host,
@@ -15,11 +18,31 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
-console.log("Zeta Terminal v.1.0")
+//Login
+console.log("Zeta Terminal v.1.2")
 console.log("Developed by Dragon Eye#1708 (https://github.com/DragonEy3)\n")
+client.on('login', function () {
+  console.log("Succesfully logged into " + config.host + " with " + config.username + "\n");
+})
 //Readline listener
 rl.on('line', (input) => {
-  client.write('chat', {message: input});
+  if(!input.startsWith(prefix)) client.write('chat', {message: input});
+  else{
+    let arr = input.split(" ");
+    let command = arr[0];
+    let args = arr.slice(1);
+    if(command === ".help"){
+      console.log(chalk.cyan("List of commands:"))
+      console.log(chalk.cyan(".help"))
+      console.log(chalk.cyan(".ping"))
+    }
+    if(command === ".ping"){
+      console.log(chalk.cyan("Latency is " + client.latency + "ms."))
+    }
+    if(command === ".info"){
+      console.log("Zeta")
+    }
+  }
 });
 
 //MC msg listener
@@ -27,22 +50,24 @@ client.on('chat', function(packet) {
   var jsonMsg = JSON.parse(packet.message);
   //Logic for all non-achievements
   if(jsonMsg.translate === undefined){
-    //Logic for normal messages
     let msg = ""
     let path
+    //Path for normal messages
     if(jsonMsg.extra[0].extra === undefined) path = jsonMsg.extra
-    //Logic for death messages
+    //Path for death messages
     else path = jsonMsg.extra[0].extra
+    //Coloring for messages
     for(let i=0; i<path.length; i++){
+      let flag = false
+      let index
       if(path[i].color === undefined) msg += chalk.white(path[i].text)
-      else if(path[i].color === "dark_aqua") msg += chalk.blue(path[i].text)
-      else if(path[i].color === "gold") msg += chalk.yellow(path[i].text)
-      else if(path[i].color === "dark_red") msg += chalk.red(path[i].text)
-      else if(path[i].color === "red") msg += chalk.red(path[i].text)
-      else if(path[i].color === "green") msg += chalk.green(path[i].text)
-      else if(path[i].color === "light_purple") msg += chalk.magenta(path[i].text)
-      else if(path[i].color === "black") msg += chalk.black(path[i].text)
-      else chalk.white(msg += path[i].text)
+      else for(let j=0; j<colorNames.length; j++){
+            if(path[i].color === colorNames[j]){
+            msg += chalk[trueColors[j]](path[i].text)
+            flag = true
+          }
+      }
+      if(!flag) msg += chalk.white(path[i].text)
     }
     console.log(msg)
   }
