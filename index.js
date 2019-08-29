@@ -58,14 +58,17 @@ client.on('chat', function(packet) {
     else path = jsonMsg.extra[0].extra
     //Coloring for messages
     for(let i=0; i<path.length; i++){
-      let flag = false
       let index
-      if(path[i].color === undefined) msg += chalk.white(path[i].text)
+      let flag = false
+      if(path[i].color === undefined){
+        msg += chalk.white(path[i].text)
+        flag = true
+      }
       else for(let j=0; j<colorNames.length; j++){
             if(path[i].color === colorNames[j]){
-            msg += chalk[trueColors[j]](path[i].text)
-            flag = true
-          }
+              msg += chalk[trueColors[j]](path[i].text)
+              flag = true
+            }
       }
       if(!flag) msg += chalk.white(path[i].text)
     }
