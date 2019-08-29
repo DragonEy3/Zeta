@@ -1,3 +1,6 @@
+@echo off
 color 0B
-cls
+echo Starting Zeta...
+timeout /t 3 > NUL
 node index.js
+pause
