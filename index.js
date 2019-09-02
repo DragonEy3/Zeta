@@ -3,6 +3,7 @@ const config = require('./config')
 const readline = require('readline');
 const chalk = require('chalk');
 var mc = require('minecraft-protocol');
+if(config.useApi) var request = require('request');
 //Variables
 const prefix = ".";
 let colorNames = ["aqua", "dark_aqua", "blue", "gold", "black", "red", "dark_red", "green", "dark_green", "light_purple", "purple"]
@@ -33,14 +34,43 @@ rl.on('line', (input) => {
     let args = arr.slice(1);
     if(command === ".help"){
       console.log(chalk.cyan("List of commands:"))
-      console.log(chalk.cyan(".help"))
-      console.log(chalk.cyan(".ping"))
+      console.log(chalk.cyan(".help - lists commands"))
+      console.log(chalk.cyan(".ping - client latency"))
+      console.log(chalk.cyan(".server - uses api to get server info"))
+      console.log(chalk.cyan(".players - uses api to get player sample"))
     }
-    if(command === ".ping"){
+    else if(command === ".ping"){
       console.log(chalk.cyan("Latency is " + client.latency + "ms."))
     }
-    if(command === ".info"){
-      console.log("Zeta")
+    else if(command === ".server") {
+      if(!config.useApi) return console.log(chalk.orange("Command requires useApi, enable in config!"))
+      var url = 'http://mcapi.us/server/status?ip='+config.host+'&port='+config.port;
+      request(url, function(err, response, body) {
+        body = JSON.parse(body);
+        var status = chalk.cyan(config.host) + chalk.cyan(" is currently ") + chalk.red("offline");
+        if(body.online) {
+          status = chalk.cyan(config.host) + chalk.cyan(" is currently ") + chalk.green("online");
+          if(body.players.now) status += chalk.cyan(': ') + chalk.yellow(body.players.now) + chalk.cyan(' people are playing!');
+          else status += chalk.cyan(': Nobody is playing!');
+        }
+        console.log(status)
+      });
+    }
+    else if (command === ".players") {
+      if(!config.useApi) return console.log(chalk.orange("Command requires useApi, enable in config!"))
+      var url = 'https://api.mcsrvstat.us/1/'+ config.host;
+      request(url, function(err, response, body) {
+        body = JSON.parse(body);
+        var callby = chalk.cyan("Online Players:");
+        if (body.players.online === 0) callby = chalk.cyan("There is no one online!");
+        let num
+        if(body.players.online > 12) num = 12
+        else num = body.players.online
+        for (var i = 0; i < num; i++){
+          callby += "\n" + chalk.cyan(body.players.list[i]);
+        }
+        console.log(callby)
+      });
     }
   }
 });
